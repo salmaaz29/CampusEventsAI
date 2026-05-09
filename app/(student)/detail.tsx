@@ -141,10 +141,10 @@ export default function DetailEvent() {
             style={[
               styles.registerBtn,
               registered && styles.registerBtnCancel,
-              (isPast || isFull) && !registered && styles.registerBtnDisabled
+              isPast && !registered && styles.registerBtnDisabled
             ]}
             onPress={handleRegister}
-            disabled={isPast || (isFull && !registered)}
+            disabled={isPast && !registered}
             activeOpacity={0.8}
           >
             <Text style={styles.registerBtnText}>
