@@ -1,29 +1,32 @@
 import { useEffect, useState } from 'react'
-import { Stack, Redirect } from 'expo-router'
-import { supabase } from '../services/supabase'
-import { Session } from '@supabase/supabase-js'
+import { Slot, router } from 'expo-router'
+import { AuthProvider, useAuth } from '../context/AuthContext'
+import { initDatabase } from '../database/init'
 
-export default function RootLayout() {
-  const [session, setSession] = useState<Session | null>(null)
-  const [loading, setLoading] = useState(true)
+// Initialiser la DB immédiatement au chargement du module
+initDatabase()
+
+function RootLayoutNav() {
+  const { user, loading } = useAuth()
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
-      setLoading(false)
-    })
-    supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session)
-    })
-  }, [])
+    if (loading) return
+    if (!user) {
+      router.replace('/(auth)/login')
+    } else if (user.role === 'admin') {
+      router.replace('/(admin)/events')
+    } else {
+      router.replace('/(student)/catalogue')
+    }
+  }, [user, loading])
 
-  if (loading) return null
+  return <Slot />
+}
 
+export default function RootLayout() {
   return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="(auth)" />
-      <Stack.Screen name="(admin)" />
-      <Stack.Screen name="(student)" />
-    </Stack>
+    <AuthProvider>
+      <RootLayoutNav />
+    </AuthProvider>
   )
 }
